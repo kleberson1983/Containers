@@ -1,0 +1,85 @@
+---
+# PLAY PARA CONFIGURACAO DA VM
+- hosts: containers
+  name: Configurando a VM
+  remote_user: vagrant
+  become: yes
+
+  tasks:
+ 
+
+    - name: Salva o nome da versao e salva em uma varivel
+      shell: |
+       lsb_release -cs
+       exec su -l $USER
+      register: ubuntu_version
+
+
+
+    - name: Ajustando Timezone
+      timezone:
+        name: America/Sao_Paulo
+
+    - name: Gerar Chave SSH
+      openssh_keypair:
+        path: /home/vagrant/.ssh/id_rsa
+        owner: vagrant
+        group: vagrant
+
+    - name: Ajustando o Arquivo de Configuração do Ansible
+      replace:
+        path: /etc/ansible/ansible.cfg
+        regexp: '^#host_key_checking = True'
+        replace: 'host_key_checking = False'
+
+    - name: Instalação de Pacotes
+      apt:
+        update_cache: yes
+        pkg:
+          - vim
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - git
+          - git-flow
+          - ansible
+          - sshpass
+
+    - name: Adicionando a GPG key do Docker
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Adicionando o repositorio do Docker e usando a verso registrada
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ubuntu_version.stdout }} stable"
+        state: present
+
+
+    - name: Instalando o Docker
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+
+
+    - name: Adicionado o User docker ao grupo vagrant
+      user:
+        name: vagrant
+        append: yes
+        group: docker
+        
+
+    - name: Iniciar o Docker Service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+

@@ -1,0 +1,28 @@
+---
+# PLAY PARA CONFIGURACAO DA VM
+- hosts: containers
+  name: Configurando a VM
+  remote_user: vagrant
+  become: yes
+  tasks:
+    - name: Ajustando Timezone
+      timezone:
+        name: America/Sao_Paulo
+
+    - name: Gerar Chave SSH
+      openssh_keypair:
+        path: /home/vagrant/.ssh/id_rsa
+        owner: vagrant
+        group: vagrant
+
+    - name: Ajustando o Arquivo de Configuração do Ansible
+      replace:
+        path: /etc/ansible/ansible.cfg
+        regexp: '^#host_key_checking = True'
+        replace: 'host_key_checking = False'
+
+    - name: Instalação de Pacotes
+      apt:
+        update_cache: yes
+        pkg:
+          - vim

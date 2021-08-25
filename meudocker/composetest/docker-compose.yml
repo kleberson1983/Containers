@@ -1,0 +1,47 @@
+version: "3.8"
+services:
+  #Declarando o Serviço de Container (comparativo ao docker run) 
+  docker1: 
+    image: "debian:latest"
+    stdin_open: true
+    tty: true
+    container_name: container1
+    
+    expose:
+      - "80"
+      
+    ports:
+      - "8080:80"
+    
+    depends_on:
+      - docker3
+    
+    volumes:
+      # Especificando o ponto de montagem  no container e o compose automaticamente cria um volume para associar.
+      - /opt
+      # Mapeando uma pasta do seu Host dentro do Container
+      - /mnt:/mnt
+      # Especifica um volume a ser criado e o ponto de montagem no container
+      - meuvolume:/media
+  docker2:
+    image: "hello-world:latest"
+    stdin_open: true
+    tty: true
+    container_name: container2
+  docker3:
+    image: "ubuntu:latest"
+    stdin_open: true
+    tty: true
+    container_name: container3
+    
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: "50M"
+
+# Declarando o Serviço de Volume (comparativo com o docker volume create)
+volumes:
+  meuvolume:
+    driver: local
+    name: nomedovolume
