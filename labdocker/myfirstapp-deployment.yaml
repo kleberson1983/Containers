@@ -17,6 +17,11 @@ spec:
       containers:
       - name: web
         image: gcr.io/containers-327522/myfirstapp:2.0
+        env:
+        - name: REDIS_HOST
+          value: 127.0.0.1
+        - name: MESSAGE
+          value: "KLEBERSON BRANDAO - DESAFIO FEITO" 
         ports:
         - name: http
           containerPort: 80
